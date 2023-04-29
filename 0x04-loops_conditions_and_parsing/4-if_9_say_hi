@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# displays Best School ten times then hi on the 9th line
+
+COUNTER=0
+
+while [ $COUNTER -le 10 ]
+do
+if [ $COUNTER -eq 9 ]
+then
+echo "Best School"
+echo "Hi"
+else
+echo "Best School"
+fi
+let COUNTER+=1
+done
