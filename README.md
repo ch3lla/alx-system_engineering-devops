@@ -1,1 +1,1 @@
-Getting started with shell
+working iwth ssh public key
