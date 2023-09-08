@@ -12,11 +12,10 @@ global
         ca-base /etc/ssl/certs
         crt-base /etc/ssl/private
 
-        # Default ciphers to use on SSL-enabled listening sockets.
-        # For more information, see ciphers(1SSL). This list is from:
-        #  https://hynek.me/articles/hardening-your-web-servers-ssl-ciphers/
-        ssl-default-bind-ciphers ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3        DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS
-        ssl-default-bind-options no-sslv3
+        # See: https://ssl-config.mozilla.org/#server=haproxy&server-version=2.0.3&config=intermediate
+        ssl-default-bind-ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
+        ssl-default-bind-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256
+        ssl-default-bind-options ssl-min-ver TLSv1.2 no-tls-tickets
 
 defaults
         log     global
@@ -34,25 +33,13 @@ defaults
         errorfile 503 /etc/haproxy/errors/503.http
         errorfile 504 /etc/haproxy/errors/504.http
 
-frontend www-http
+#--ch3lla.tech-params-begin--
+backend ch3lla.tech-backend
+        balance roundrobin
+        server 110489-web-01 3.90.65.25:80 check
+        server 110489-web-02 52.91.168.175:80 check
+frontend ch3lla.tech-frontend
         bind *:80
-        reqadd X-Forwarded-Proto:\ http
-        default_backend www-backend
-
-frontend www-https
-        bind *:443 ssl crt /etc/haproxy/certs/www.ch3lla.tech
-        reqadd X-Forwarded-Proto:\ https
-        acl letsencrypt-acl path_beg /.well-known/acme-challenge/
-        use_backend letsencrypt-backend if letsencrypt-acl
-        default_backend www-backend
-
-backend www-backend
-        balance roundrobin
-        redirect scheme https if !{ ssl_fc }
         mode http
-        balance roundrobin
-        server 2528-web-01 34.73.62.68:80 check
-        server 2528-web-02 34.75.147.36:80 check
-
-backend letsencrypt-backend
-        server letsencrypt 127.0.0.1:54321
+        default_backend ch3lla.tech-backend
+#--ch3lla.tech-params-end--
